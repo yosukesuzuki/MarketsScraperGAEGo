@@ -26,7 +26,7 @@ func init() {
     m.Get("/api/Markets", func(w http.ResponseWriter,r render.Render,req *http.Request) {
         c := appengine.NewContext(req)
         client := urlfetch.Client(c)
-        resp, err := client.Get("http://stocks.finance.yahoo.co.jp/stocks/list/indices?area=asia")
+        resp, err := client.Get("http://www.nikkei.com/markets/kaigai/worldidx.aspx")
         if err != nil {
             http.Error(w, err.Error(), http.StatusInternalServerError)
             //return
@@ -34,16 +34,13 @@ func init() {
         //c.Infof("response: %v",resp.Body)
         results := []Result{}
         doc, _ := goquery.NewDocumentFromResponse(resp)
-        doc.Find("dl.lineFi").Each(func(_ int, s *goquery.Selection) {
-            if s.Find("dt.title > a").Text() != "" {
-                title := s.Find("dt.title > a").Text()
-                c.Infof("title: %v",title)
-                pricedate := s.Find("span.date").Text()
-                price := s.Find("dd.fixWidth3 > strong").Text()
-                diff := s.Find("dd.fixWidth2 > strong").Text()
+        doc.Find("div.mk-world_market div table tr").Each(func(_ int, s *goquery.Selection) {
+                title := s.Find("th").Text()
+                price := s.Find("th").Next().Text()
+                diff := s.Find("td:nth-child(3)").Text()
+                pricedate := s.Find("td:nth-child(4)").Text()
                 result := Result{title,pricedate,price,diff}
                 results = append(results,result)
-            }
         })
         r.JSON(200, map[string]interface{}{"results": results})
     })
