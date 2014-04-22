@@ -1,6 +1,10 @@
 package marketsapi
 
 import (
+    "fmt"
+    "time"
+    "strings"
+    "strconv"
     "appengine"
     "appengine/urlfetch"
     "net/http"
@@ -17,6 +21,39 @@ type Result struct {
 }
 
 
+func StringToTime(dateString string) string{
+    t := time.Now()
+    t = t.Add(9*time.Hour)
+    datetext := strings.Replace(dateString,"日","",-1)
+    datetextarr := strings.Split(datetext," ")
+    dayNum, _ := strconv.Atoi(datetextarr[0])
+    if dayNum > t.Day() {
+        t = t.AddDate(0,-1,0)
+    }
+    yyyymm := t.Format("2006-01")
+    yyyymmddhhmm := yyyymm +"-"+ datetext
+    date_yyyymmddhhmm,err := time.Parse("2006-01-02 15:04",yyyymmddhhmm)
+    if err != nil{
+        fmt.Println("error")
+    }
+    date_yyyymmddhhmm = date_yyyymmddhhmm.Add(-9*time.Hour)
+    return date_yyyymmddhhmm.Format("2006-01-02 15:04:05 MST")
+}
+
+func Indexes () map[string]string{
+    indexes := map[string]string{
+        "日経平均（円）":"Nikkei225",
+        "ドル・円":"USD/JPY",
+        "ユーロ・円":"EURO/JPY",
+        "ユーロ・ドル":"EURO/USD",
+        "ドル・中国人民元":"USD/CNY",
+        "NYダウ工業株30種（ドル）":"DJIA",
+        "ナスダック":"Nasdaq",
+        "英FTSE100":"FTSE100",
+    }
+    return indexes
+}
+
 func init() {
     m := martini.Classic()
     m.Use(render.Renderer())
@@ -32,15 +69,20 @@ func init() {
             //return
         }
         //c.Infof("response: %v",resp.Body)
+        indexes := Indexes()
         results := []Result{}
         doc, _ := goquery.NewDocumentFromResponse(resp)
         doc.Find("div.mk-world_market div table tr").Each(func(_ int, s *goquery.Selection) {
                 title := s.Find("th").Text()
-                price := s.Find("th").Next().Text()
-                diff := s.Find("td:nth-child(3)").Text()
-                pricedate := s.Find("td:nth-child(4)").Text()
-                result := Result{title,pricedate,price,diff}
-                results = append(results,result)
+                title = strings.Trim(strings.Replace(title,"※","",-1)," ")
+                if val,ok := indexes[title]; ok {
+                    price := s.Find("th").Next().Text()
+                    diff := s.Find("td:nth-child(3)").Text()
+                    pricetime := s.Find("td:nth-child(4)").Text()
+                    pricetime = StringToTime(pricetime)
+                    result := Result{val,pricetime,price,diff}
+                    results = append(results,result)
+                }
         })
         r.JSON(200, map[string]interface{}{"results": results})
     })
