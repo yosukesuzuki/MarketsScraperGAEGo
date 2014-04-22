@@ -21,16 +21,15 @@ type Result struct {
 }
 
 
-func StringToTime(dateString string) string{
-    t := time.Now()
-    t = t.Add(9*time.Hour)
+func StringToTime(dateString string,t time.Time) string{
+    t_jst := t.Add(9*time.Hour)
     datetext := strings.Replace(dateString,"日","",-1)
     datetextarr := strings.Split(datetext," ")
     dayNum, _ := strconv.Atoi(datetextarr[0])
-    if dayNum > t.Day() {
-        t = t.AddDate(0,-1,0)
+    if dayNum > t_jst.Day() {
+        t_jst = t_jst.AddDate(0,-1,0)
     }
-    yyyymm := t.Format("2006-01")
+    yyyymm := t_jst.Format("2006-01")
     yyyymmddhhmm := yyyymm +"-"+ datetext
     date_yyyymmddhhmm,err := time.Parse("2006-01-02 15:04",yyyymmddhhmm)
     if err != nil{
@@ -79,7 +78,8 @@ func init() {
                     price := s.Find("th").Next().Text()
                     diff := s.Find("td:nth-child(3)").Text()
                     pricetime := s.Find("td:nth-child(4)").Text()
-                    pricetime = StringToTime(pricetime)
+                    t := time.Now()
+                    pricetime = StringToTime(pricetime,t)
                     result := Result{val,pricetime,price,diff}
                     results = append(results,result)
                 }
