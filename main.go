@@ -7,6 +7,7 @@ import (
     "strconv"
     "appengine"
     "appengine/urlfetch"
+    "appengine/memcache"
     "net/http"
     "github.com/go-martini/martini"
     "github.com/martini-contrib/render"
@@ -61,17 +62,25 @@ func init() {
     })
     m.Get("/api/Markets", func(w http.ResponseWriter,r render.Render,req *http.Request) {
         c := appengine.NewContext(req)
-        client := urlfetch.Client(c)
-        resp, err := client.Get("http://www.nikkei.com/markets/kaigai/worldidx.aspx")
-        if err != nil {
-            http.Error(w, err.Error(), http.StatusInternalServerError)
-            //return
+        memcache_key := "markets"
+        var item_list []Result
+        _, get_cache_err := memcache.JSON.Get(c,memcache_key,&item_list)
+        if get_cache_err != nil && get_cache_err != memcache.ErrCacheMiss {
+            c.Infof("get cache error")
         }
-        //c.Infof("response: %v",resp.Body)
-        indexes := Indexes()
-        results := []Result{}
-        doc, _ := goquery.NewDocumentFromResponse(resp)
-        doc.Find("div.mk-world_market div table tr").Each(func(_ int, s *goquery.Selection) {
+        if get_cache_err == nil {
+            c.Infof("cached data found")
+            c.Infof("cached data: %v",item_list)
+        } else {
+            c.Infof("cached data not found")
+            client := urlfetch.Client(c)
+            resp, err := client.Get("http://www.nikkei.com/markets/kaigai/worldidx.aspx")
+            if err != nil {
+                http.Error(w, err.Error(), http.StatusInternalServerError)
+            }
+            indexes := Indexes()
+            doc, _ := goquery.NewDocumentFromResponse(resp)
+            doc.Find("div.mk-world_market div table tr").Each(func(_ int, s *goquery.Selection) {
                 title := s.Find("th").Text()
                 title = strings.Trim(strings.Replace(title,"※","",-1)," ")
                 if val,ok := indexes[title]; ok {
@@ -81,10 +90,20 @@ func init() {
                     t := time.Now()
                     pricetime = StringToTime(pricetime,t)
                     result := Result{val,pricetime,price,diff}
-                    results = append(results,result)
+                    item_list = append(item_list,result)
                 }
-        })
-        r.JSON(200, map[string]interface{}{"results": results})
+            })
+            item := &memcache.Item{
+                Key:memcache_key,
+                Object: &item_list,
+                Expiration: 5*time.Minute,
+            }
+            set_err := memcache.JSON.Set(c, item)
+            if set_err != nil {
+                c.Infof("set error: %v",set_err)
+            }
+        }
+        r.JSON(200, map[string]interface{}{"results": item_list})
     })
     http.Handle("/", m)
 }
