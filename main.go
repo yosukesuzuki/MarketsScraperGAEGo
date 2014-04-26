@@ -70,7 +70,7 @@ func init() {
         }
         if get_cache_err == nil {
             c.Infof("cached data found")
-            c.Infof("cached data: %v",item_list)
+            //c.Infof("cached data: %v",item_list)
         } else {
             c.Infof("cached data not found")
             client := urlfetch.Client(c)
