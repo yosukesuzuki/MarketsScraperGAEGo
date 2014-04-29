@@ -4,5 +4,8 @@ runtime: go
 api_version: go1
 
 handlers:
+- url: /pebble
+  static_dir: pebble
+
 - url: /.*
   script: _go_app
