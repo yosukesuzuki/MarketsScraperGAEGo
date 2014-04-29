@@ -86,6 +86,8 @@ func init() {
                 if val,ok := indexes[title]; ok {
                     price := s.Find("th").Next().Text()
                     diff := s.Find("td:nth-child(3)").Text()
+                    diff = strings.Replace(diff,"＋","+",-1)
+                    diff = strings.Replace(diff,"－","-",-1)
                     pricetime := s.Find("td:nth-child(4)").Text()
                     t := time.Now()
                     pricetime = StringToTime(pricetime,t)
