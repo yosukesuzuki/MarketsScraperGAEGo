@@ -20,6 +20,7 @@ type Result struct {
     PriceTime    string
     Price      string
     Diff      string
+    DiffPercent      string
 }
 
 
@@ -95,11 +96,12 @@ func init() {
                     diff := s.Find("td:nth-child(3)").Text()
                     diff = strings.Replace(diff,"＋","+",-1)
                     diff = strings.Replace(diff,"－","-",-1)
+                    _diff := strings.Split(diff,"(")
                     pricetime := s.Find("td:nth-child(4)").Text()
                     t := time.Now()
                     c.Infof("pricetime: %v",pricetime)
                     pricetime = StringToTime(pricetime,t)
-                    result := Result{val,pricetime,price,diff}
+                    result := Result{val,pricetime,price,_diff[0],"("+_diff[1]}
                     item_list = append(item_list,result)
                 }
             })
