@@ -18,8 +18,7 @@ function showData(index,json_data){
   simply.subtitle(json_data.results[index].Price);
   var body_string = formatWithSpace(13,json_data.results[index].Diff)
   body_string += formatWithSpace(13,json_data.results[index].DiffPercent)
-  //body_string += localTime(json_data.results[index].PriceTime)
-  body_string += json_data.results[index].PriceTime
+  body_string += localTime(json_data.results[index].PriceTime)
   simply.body(body_string);
 }
 

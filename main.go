@@ -1,7 +1,7 @@
 package marketsapi
 
 import (
-//    "log"
+    "log"
     "fmt"
     "time"
     "strings"
@@ -27,9 +27,6 @@ type Result struct {
 func StringToTime(dateString string,t time.Time) string{
     t_jst := t.Add(9*time.Hour)
     datetext := strings.Replace(dateString,"日","",-1)
-    if len(datetext) == 7 {
-        datetext = "0" + datetext
-    }
     datetextarr := strings.Split(datetext," ")
     dayNum, _ := strconv.Atoi(datetextarr[0])
     //log.Println("dayNum: %v",dayNum)
@@ -37,9 +34,18 @@ func StringToTime(dateString string,t time.Time) string{
     if dayNum > t_jst.Day() {
         t_jst = t_jst.AddDate(0,-1,0)
     }
+    if len(datetextarr[0]) == 1 {
+        datetextarr[0] = "0"+datetextarr[0]
+        //log.Println(datetextarr[0])
+    }
+    if len(datetextarr[1]) == 4 {
+        datetextarr[1] = "0"+datetextarr[1]
+        //log.Println(datetextarr[1])
+    }
+    datetext = datetextarr[0] + " " + datetextarr[1]
     yyyymm := t_jst.Format("2006-01")
     yyyymmddhhmm := yyyymm +"-"+ datetext
-    //log.Println(yyyymmddhhmm)
+    log.Println(yyyymmddhhmm)
     date_yyyymmddhhmm,err := time.Parse("2006-01-02 15:04",yyyymmddhhmm)
     if err != nil{
         fmt.Println("error")
