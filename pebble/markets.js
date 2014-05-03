@@ -6,10 +6,15 @@ function formatWithSpace(keta, mstring) {
   if (cnt <= 0) return src;
   while (cnt-- > 0) src = src + " "; return src;
 }
-
+function formatWithZero(keta, mstring) {
+  var src = mstring;
+  var cnt = keta - mstring.length;
+  if (cnt <= 0) return src;
+  while (cnt-- > 0) src = "0"+ src; return src;
+}
 function localTime(timestring) {
     var ltime = new Date(timestring);
-    return ltime.getMonth()+"/"+ltime.getDay()+" "+ltime.getHours()+":"+ltime.getMinutes()
+    return ltime.getMonth()+"/"+ltime.getDay()+" "+formatWithZero(2,ltime.getHours())+":"+formatWithZero(2,ltime.getMinutes())
 }
 
 function showData(index,json_data){

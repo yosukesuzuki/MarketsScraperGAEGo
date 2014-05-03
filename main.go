@@ -51,7 +51,7 @@ func StringToTime(dateString string,t time.Time) string{
         fmt.Println("error")
     }
     date_yyyymmddhhmm = date_yyyymmddhhmm.Add(-9*time.Hour)
-    return date_yyyymmddhhmm.Format("2006-01-02 15:04:05 MST")
+    return date_yyyymmddhhmm.Format("2006/01/02 15:04:05 MST")
 }
 
 func Indexes () map[string]string{
