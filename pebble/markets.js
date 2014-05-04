@@ -14,7 +14,7 @@ function formatWithZero(keta, mstring) {
 }
 function localTime(timestring) {
     var ltime = new Date(timestring);
-    return ltime.getMonth()+"/"+ltime.getDay()+" "+formatWithZero(2,ltime.getHours())+":"+formatWithZero(2,ltime.getMinutes())
+    return (ltime.getMonth())+1+"/"+ltime.getDate()+" "+formatWithZero(2,ltime.getHours())+":"+formatWithZero(2,ltime.getMinutes())
 }
 
 function showData(index,json_data){

@@ -1,0 +1,24 @@
+<html>
+    <body>
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js"></script>
+        <script>
+            function formatWithZero(keta, mstring) {
+                var src = new String(mstring);
+                var cnt = keta - src.length;
+                if (cnt <= 0) return src;
+                while (cnt-- > 0) src = "0"+ src; return src;
+            }
+            function localTime(timestring) {
+                var ltime = new Date(timestring);
+                return (ltime.getMonth())+1+"/"+ltime.getDate()+" "+formatWithZero(2,ltime.getHours())+":"+formatWithZero(2,ltime.getMinutes())
+            }
+            $(document).ready(function(){
+                $.ajax({url:"/api/Markets"}).done(function(data){
+                    $.each(data.results,function(i,val){
+                        $("body").append("<div>"+localTime(val.PriceTime)+"</div>")
+                    });
+                });
+            });
+        </script>
+    </body>
+</html>
